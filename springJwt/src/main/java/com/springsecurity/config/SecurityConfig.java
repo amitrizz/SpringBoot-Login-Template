@@ -31,26 +31,32 @@ public class SecurityConfig {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req -> req
-                        .requestMatchers("/login/**", "/register/**").permitAll()  // Login and register accessible to all
-                        .requestMatchers("/api/admin/**").hasAuthority("ADMIN")  // Admin-specific routes
-                        .requestMatchers("/api/user/**").hasAnyAuthority("USER","ADMIN")  // User-specific routes
-                        .anyRequest().authenticated()  // All other requests require authentication
+                        .requestMatchers("/login/**", "/register/**").permitAll() // Login and register accessible to
+                                                                                  // all
+                        .requestMatchers("/api/admin/**").hasAuthority("ADMIN") // Admin-specific routes
+                        .requestMatchers("/api/user/**").hasAnyAuthority("USER", "ADMIN") // User-specific routes
+                        .anyRequest().authenticated() // All other requests require authentication
                 )
                 .userDetailsService(userDetailsServiceImp)
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)  // Stateless session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Stateless session
                 )
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)  // JWT filter before UsernamePasswordAuthenticationFilter
+                .exceptionHandling(exception -> exception
+                        .accessDeniedHandler(new CustomAccessDeniedHandler()))
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // JWT filter
+                // before
+                // UsernamePasswordAuthenticationFilter
                 .build();
     }
- 
+
     @Bean
-    public PasswordEncoder passwordEncoder(){
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+            throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 }
